@@ -1,0 +1,45 @@
+# Dockerfile - Corrected Version
+
+# Use an official Python runtime as a parent image
+FROM python:3.10-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Install OS-level dependencies with GPG fix
+# Needed for scipy compilation and potentially openpyxl/other libraries
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates gnupg curl && \
+    # Explicitly install keyring for Debian Bookworm (base for python:3.10-slim)
+    apt-get update && apt-get install -y debian-archive-keyring && \
+    # Previous versions might need manual download, keep for reference:
+    # curl -fsSL https://packages.debian.org/bookworm/debian-archive-keyring.deb -o /tmp/debian-archive-keyring.deb && \
+    # apt-get install -y /tmp/debian-archive-keyring.deb && \
+    # rm /tmp/debian-archive-keyring.deb && \
+    apt-get update && \
+    # Now install build tools and libraries from user's original list
+    apt-get install -y --no-install-recommends build-essential python3-dev libxml2-dev libxslt1-dev && \
+    # Clean up apt lists to reduce image size
+    rm -rf /var/lib/apt/lists/*
+
+# Copy only the requirements file first to leverage Docker cache
+COPY requirements.txt .
+
+# Install Python dependencies using requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code (app.py, etc.)
+# Excludes anything in .dockerignore (e.g., .git, venv)
+COPY . /app
+
+# Expose the port the app runs on *inside* the container
+EXPOSE 8510
+
+# Define environment variable for headless operation
+ENV STREAMLIT_SERVER_HEADLESS=true
+
+# Run app.py when the container launches
+# Use 0.0.0.0 to make it accessible from outside the container
+# Use the port specified in EXPOSE
+CMD ["streamlit", "run", "app.py", "--server.port=8510", "--server.address=0.0.0.0"]
