@@ -210,18 +210,28 @@ if data_loaded_successfully:
         st.markdown(f"""
         **Data Source:** This dashboard is designed specifically for analyzing data from the official **Star Ratings quarterly data extract** published by the Australian Government.
         *   **Content:** This extract provides service-level Star Ratings data (Overall and component ratings) for government-funded residential aged care homes at a specific point in time. It typically includes sheets like 'Star Ratings' and 'Detailed data'.
-        *   **Origin:** The data is usually found via the GEN Aged Care Data website and hosted on the Department of Health and Aged Care resources section.
+        *   **Origin:** The data is usually found via the GEN Aged Care Data website and hosted on the Department of Health and Aged Care resources section. We've loaded Feb 2025 data by default.
         *   **How to Obtain:** You must manually download the desired quarterly extract file (`.xlsx`) from the official government sources. The exact download location changes with each release. Start your search here:
             *   **GEN Aged Care Data:** [https://www.gen-agedcaredata.gov.au/](https://www.gen-agedcaredata.gov.au/) (Look for Star Ratings or quarterly reports)
             *   *Example Path (May Change):* You might navigate through GEN -> Specific Quarter Report -> `health.gov.au` Publication Page -> Final `.xlsx` Link.
+        
         **Using the Dashboard:**
         1.  **Obtain the File:** Download the specific quarterly `.xlsx` data extract you wish to analyze.
         2.  **Upload:** Use the sidebar (**1. Data Input**) to upload the downloaded Excel file.
         3.  *(Alternative)* If running via Docker with a volume mount, the application may load a default file named `{DEFAULT_DATA_FILENAME}` if no file is uploaded.
-        4.  **Analyze:** Use the sidebar filters and navigate the tabs above to explore the data.
+        4.  **Analyze:** Use the sidebar filters and navigate the tabs above to explore the data. This dashboard is particularly beneficial for providers operating multiple services, offering tools to compare site-specific performance. For instance, the 'Provider Profile Drill-Down' tab includes visualizations such as box plots (see below for an example) to help identify variations in Quality Measures across different sites within a provider's network.
         """)
         st.warning(f"**Important:** Please ensure you are using the official and complete '{DEFAULT_DATA_FILENAME}' (or similar) Excel file. The accuracy of the analysis depends entirely on the structure and content of the uploaded data matching the expected format.")
-        st.markdown("---")
+        st.markdown("---") # This separator was already here, good to keep.
+        st.markdown("""
+        **Future Enhancements:**
+        Looking ahead, this dashboard is designed to eventually incorporate real-time Star Rating data. This could be achieved through:
+        *   Direct API access to the Department's Government Enterprise Mulesoft (GEM) website.
+        *   Data shared by participating providers into a secure Data Clean Room (DCR) solution, potentially facilitated by ARIIA (Aged Care Research & Industry Innovation Australia).
+        """)
+        # Illustration: Box plot of Quality Measures distribution across multiple sites
+        st.image("boxplots.png", caption="Quality Measures Distribution (Box Plot)", use_container_width=True)
+
 
     with tabs[1]:
         st.subheader("Sector Overview")
