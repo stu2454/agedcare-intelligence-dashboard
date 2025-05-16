@@ -226,7 +226,7 @@ if data_loaded_successfully:
         st.markdown("""
         **Future Enhancements:**
         Looking ahead, this dashboard is designed to eventually incorporate real-time Star Rating data. This could be achieved through:
-        *   Direct API access to the Department's Government Enterprise Mulesoft (GEM) website.
+        *   Direct API access to the Department's GEN Aged Care Data website.
         *   Data shared by participating providers into a secure Data Clean Room (DCR) solution, potentially facilitated by ARIIA (Aged Care Research & Industry Innovation Australia).
         """)
         # Illustration: Box plot of Quality Measures distribution across multiple sites
