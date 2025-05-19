@@ -562,11 +562,31 @@ elif source_type == "default_file" and not data_loaded_successfully:
     st.error(f"Failed to load or process the default data file ('{DEFAULT_DATA_FILENAME}'). Please check the file content and Docker mount if applicable.")
 elif not data_source:
     st.info(f"📈 **Welcome!** Please upload a Star Ratings Excel file using the sidebar, or ensure '{DEFAULT_DATA_FILENAME}' is available in the `/app/` directory (e.g., via Docker volume mount).")
+    
     st.markdown(f"""
-    **Instructions:**
-    1. Obtain the official quarterly Star Ratings data extract (`.xlsx`) from government sources (e.g., GEN Aged Care Data).
-    2. Use the **"1. Data Input"** section in the sidebar to upload your file.
+    ### 📥 Instructions for Using the Dashboard
+
+    1. **Obtain the Data File**  
+    This dashboard is designed to analyse the **Star Ratings quarterly data extract** published by the Australian Government.
+
+    - **Content:** The extract includes service-level Star Ratings (Overall and component scores) for government-funded residential aged care homes, along with detailed service characteristics and quality indicators.
+    - **Sheets Required:** The file must include sheets titled `'Star Ratings'` and `'Detailed data'`.
+
+    2. **How to Obtain the File**  
+    You must manually download the `.xlsx` file from official government sources. Start here:
+    - **GEN Aged Care Data:** [https://www.gen-agedcaredata.gov.au/](https://www.gen-agedcaredata.gov.au/)
+    - Navigate to **Star Ratings** or the desired quarter (e.g. "February 2025 Quarterly Report").
+    - Follow the links to the **Department of Health and Aged Care** publication page.
+    - Download the final `.xlsx` extract (typically titled something like `star-ratings-quarterly-data-extract-february-2025.xlsx`).
+
+    *⚠️ Note:* The specific download URL changes each quarter.
+
+    3. **Upload or Auto-Load**  
+    - Upload your downloaded `.xlsx` file using the **"1. Data Input"** section in the sidebar.  
+    - If you're running this app in an environment like Docker or Streamlit Cloud and have placed the file in the working directory, the app will attempt to auto-load it.
+
     """)
+
 
 st.markdown("---")
 st.caption("Disclaimer: Demonstrator model for intelligence and policy analysis purposes. Verify all data with official sources before making decisions.")
