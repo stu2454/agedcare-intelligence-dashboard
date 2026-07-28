@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# Copied from the repo root by scripts/copy-data.mjs at build time.
+public/*.xlsx

@@ -1,0 +1,40 @@
+{
+  "rowCount": 2612,
+  "providerCount": 727,
+  "rnMean": 116.24588763430457,
+  "totalMean": 105.43646896319571,
+  "rnNotNull": 2484,
+  "starMedian": 4.0,
+  "starP90": 4.0,
+  "rnP75": 117.5,
+  "outlierCount": 281,
+  "outliersByMetric": {
+    "[QM] Restrictive practices": 100,
+    "[QM] Medication management - antipsychotic": 62,
+    "RN Care Compliance %": 44,
+    "[QM] Pressure injuries*": 30,
+    "[QM] Falls and major injury - falls*": 30,
+    "Total Care Compliance %": 13,
+    "Overall Star Rating": 2
+  },
+  "concernCount": 850,
+  "decisionCount": 67,
+  "qmMeans": {
+    "[QM] Pressure injuries*": 0.5567176186645213,
+    "[QM] Restrictive practices": 18.975060337892195,
+    "[QM] Unplanned weight loss*": 7.068382944489139,
+    "[QM] Falls and major injury - falls*": 30.969026548672566,
+    "[QM] Falls and major injury - major injury from a fall*": 1.7417538213998391,
+    "[QM] Medication management - polypharmacy": 35.42960579243765,
+    "[QM] Medication management - antipsychotic": 8.845534995977474
+  },
+  "qmSem": {
+    "[QM] Pressure injuries*": 0.013461666788817387,
+    "[QM] Restrictive practices": 0.3806633379993018,
+    "[QM] Unplanned weight loss*": 0.10608672298034033,
+    "[QM] Falls and major injury - falls*": 0.17686237263975899,
+    "[QM] Falls and major injury - major injury from a fall*": 0.05741710705988154,
+    "[QM] Medication management - polypharmacy": 0.2551464644952923,
+    "[QM] Medication management - antipsychotic": 0.17737237584978038
+  }
+}

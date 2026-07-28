@@ -3,7 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A regulatory intelligence tool for analysing performance across Australia's
-residential aged care providers, built with Streamlit and Plotly.
+residential aged care providers. A static client-side app — no server, no cold
+start, and uploaded data never leaves your browser.
 
 ## Overview
 
@@ -38,7 +39,8 @@ published by the Australian Government.
   Ratings or the quarterly reports.
 
 The February 2025 extract ships with this repository and loads automatically.
-To analyse a different quarter, upload it under **1. Data Input** in the sidebar.
+To analyse a different quarter, drop its `.xlsx` onto the sidebar. It is parsed
+in your browser and never uploaded.
 
 > **Important:** accuracy depends entirely on the uploaded workbook matching the
 > expected structure. The app validates the required sheets and columns on load
@@ -61,78 +63,119 @@ every tab. The sector filters define the peer group used for all benchmarking.
 
 ## Running locally
 
-**Prerequisites:** Python 3.11+ and Git.
+**Prerequisites:** Node 20+ and Git.
 
 ```bash
 git clone https://github.com/stu2454/agedcare-intelligence-dashboard.git
-cd agedcare-intelligence-dashboard
+cd agedcare-intelligence-dashboard/web
 
-python3 -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-
-streamlit run app.py
+npm install
+npm run dev
 ```
 
-The app is served at <http://localhost:8501>.
-
-### With Docker
+The app is served at <http://localhost:5173>. The bundled extract is copied into
+`web/public/` automatically before `dev`, `build` and `test`, so the workbook
+lives in exactly one place in version control.
 
 ```bash
-docker compose up --build
+npm run build      # production bundle into web/dist
+npm run preview    # serve that bundle locally
+npm test           # unit and parity tests
+npm run typecheck  # tsc --noEmit
 ```
-
-The app is served at <http://localhost:8510>.
 
 ## Tests
 
 ```bash
-pip install -r requirements-dev.txt
-pytest
+cd web && npm test
 ```
 
-The suite covers the data pipeline against a synthetic extract built to exercise
-the awkward cases (zero and missing care-minutes targets, percent-formatted
-text, missing ratings), plus end-to-end runs of the real app through Streamlit's
-`AppTest` harness. Because `AppTest` executes every tab body on each run, an
-unhandled exception anywhere in the dashboard fails the suite.
+Three suites:
+
+- **`stats.test.ts`** — the statistics helpers, asserted against known
+  numpy/pandas/scipy outputs so quantiles, standard errors and percentile ranks
+  stay faithful to the original implementation.
+- **`parse.test.ts`** — parsing and cleaning: percent-formatted text, zero and
+  missing care-minutes targets, day-first dates, blank categoricals.
+- **`parity.test.ts`** — loads the real bundled extract and asserts the output
+  matches `python-reference.json`, generated from the previous pandas
+  implementation. Row counts, means to eight decimal places, all 281 outlier
+  findings with their per-metric breakdown, and the concern-flag count all
+  match, so the rewrite is provably not a behaviour change.
 
 ## Deploying to Render
 
-The repository includes a [`render.yaml`](render.yaml) blueprint.
+The repository includes a [`render.yaml`](render.yaml) blueprint defining a
+**Static Site**.
 
 1. In the Render dashboard choose **New → Blueprint** and select this repository.
-2. Render reads `render.yaml` and creates a Docker web service.
-3. Deploy. Subsequent pushes to `main` deploy automatically (`autoDeploy: true`).
+2. Render reads `render.yaml`, runs `cd web && npm ci && npm run build`, and
+   publishes `web/dist`.
+3. Deploy. Subsequent pushes to `main` deploy automatically.
 
-Notes:
+Because it is a static site rather than a web service:
 
-- The container binds the `$PORT` Render injects; nothing is hardcoded.
-- Health checks hit Streamlit's `/_stcore/health` endpoint.
-- The blueprint targets the `singapore` region as the closest to Australia.
-  Change it before creating the service — the region is fixed afterwards.
-- On Render's free plan the service sleeps when idle, so the first request after
-  a period of inactivity takes a while to load the extract.
+- **It is free and never sleeps.** The previous Docker web service was reclaimed
+  by Render after a period of inactivity on the free plan, which is why its URL
+  started returning "Not found".
+- **There is no cold start.** Nothing has to wake up before the first request.
+- **There is no server to attack.** The blueprint sets a strict
+  Content-Security-Policy; the app makes no network requests at all after load.
+
+## Architecture
+
+The dashboard is a static client-side app. There is no backend.
+
+- The bundled extract is fetched and parsed **in the browser** with SheetJS.
+  Uploaded workbooks take the **exact same code path**, so there is no second
+  implementation to drift out of sync.
+- Because parsing is client-side, **uploaded provider data never leaves the
+  machine** — relevant given the Data Clean Room ambitions in the roadmap. You
+  can verify this in the browser's network panel: the app issues no requests
+  after load.
+- Charts use ECharts with tree-shaken imports. Only the active tab renders,
+  unlike the previous Streamlit version which executed every tab body on every
+  interaction.
+
+`@e965/xlsx` is used rather than the `xlsx` package on npm: the latter is pinned
+to a 2022 release carrying a high-severity prototype-pollution and ReDoS
+advisory, because SheetJS moved distribution off the npm registry. `@e965/xlsx`
+is a clean republish of the patched 0.20.3.
 
 ## Project structure
 
 ```text
-app.py                      Streamlit entrypoint: data source, filters, tab wiring
-agedcare/
-  config.py                 Column names, thresholds and display constants
-  data.py                   Loading, cleaning, benchmarks, outliers, concern flags
-  filters.py                Sidebar filters and the DashboardContext passed to tabs
-  tabs/                     One module per tab, each exposing render()
-tests/
-  conftest.py               Synthetic extract fixtures
-  test_data.py              Data pipeline and analytical helpers
-  test_app.py               End-to-end AppTest runs
-render.yaml                 Render blueprint
-Dockerfile                  Production image (binds $PORT, runs non-root)
+web/                          The deployed dashboard
+  src/
+    lib/
+      config.ts               Column names, thresholds, display constants
+      types.ts                Row types and safe accessors
+      stats.ts                Quantiles, SEM, percentile ranks, IQR fences
+      parse.ts                xlsx -> prepared services (bundled and uploaded)
+      analytics.ts            Benchmarks, outliers, percentile ranks, concerns
+    state/
+      useDashboard.ts         Extract loading, filters, derived views
+      useTheme.tsx            Light/dark theme and the chart palette
+    components/               Chart wrapper, sidebar, table, UI primitives
+    tabs/                     One module per tab
+  tests/                      Unit and Python-parity tests
+render.yaml                   Render Static Site blueprint
+
+app.py, agedcare/, tests/     Previous Streamlit implementation (see below)
+Dockerfile, docker-compose.yml
 ```
 
-The analytical layer in `agedcare/data.py` is plain pandas with no Streamlit
-dependencies beyond caching, so it can be tested and reused directly.
+### The previous Streamlit app
+
+The Python implementation is retained in the repository. It is no longer the
+deployed app — `render.yaml` now publishes the static site — but it still runs
+(`pip install -r requirements.txt && streamlit run app.py`) and its test suite
+still passes. It serves as the reference used to generate
+`web/tests/python-reference.json`.
+
+Delete it once you are satisfied the static app has full parity; keeping two
+implementations indefinitely invites exactly the drift the parity tests exist to
+catch.
 
 ## Roadmap
 
