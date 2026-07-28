@@ -1,0 +1,10 @@
+[server]
+headless = true
+# The quarterly extract is ~1.5 MB; 50 MB leaves generous headroom.
+maxUploadSize = 50
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+primaryColor = "#1f77b4"

@@ -1,35 +1,34 @@
-# Dockerfile - Using standard python image
+FROM python:3.13-slim
 
-# Use the standard, non-slim image
-FROM python:3.10
+# Unbuffered output so container logs stream to Render in real time.
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    STREAMLIT_SERVER_HEADLESS=true \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Install only specific libraries potentially still needed, skip build-essential if included
-# (You might not even need this apt-get section with the full image)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    libxml2-dev \
-    libxslt1-dev && \
-    # Clean up apt lists
-    rm -rf /var/lib/apt/lists/*
-
-# Copy only the requirements file first
+# Dependencies are installed before the source is copied so that code changes
+# don't invalidate the (slow) pip layer. Wheels are available for every pinned
+# package on this base image, so no build toolchain is needed.
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
-COPY . /app
+COPY . .
 
-# Expose the port
-EXPOSE 8510
+# Run as an unprivileged user.
+RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
+USER appuser
 
-# ENV for headless
-ENV STREAMLIT_SERVER_HEADLESS=true
+# Render injects $PORT and health-checks against it; the fallback keeps
+# `docker run` working locally.
+ENV PORT=8501
+EXPOSE 8501
 
-# CMD to run the app
-CMD ["streamlit", "run", "app.py", "--server.port=8510", "--server.address=0.0.0.0"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD python -c "import os,urllib.request; \
+        urllib.request.urlopen(f\"http://127.0.0.1:{os.environ['PORT']}/_stcore/health\")"
+
+# Shell form so $PORT is expanded at runtime rather than baked in at build time.
+CMD ["sh", "-c", "streamlit run app.py --server.port=$PORT --server.address=0.0.0.0"]

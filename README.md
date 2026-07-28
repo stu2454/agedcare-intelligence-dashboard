@@ -1,93 +1,151 @@
---- START OF FILE README.md ---
-
 # Aged Care Sector Intelligence Dashboard
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Introduction
-
-**Data Source:** This dashboard is designed specifically for analysing data from the official **Star Ratings quarterly data extract** published by the Australian Government. :contentReference[oaicite:0]{index=0}
-
-- **Content:** This extract provides service-level Star Ratings data (Overall and component ratings) for government-funded residential aged care homes at a specific point in time. It typically includes sheets like 'Star Ratings' and 'Detailed data'.
-- **Origin:** The data is usually found via the GEN Aged Care Data website and hosted on the Department of Health and Aged Care resources section.
-- **How to Obtain:** You must manually download the desired quarterly extract file (`.xlsx`) from the official government sources. The exact download location changes with each release. Start your search here:
-  - **GEN Aged Care Data:** [https://www.gen-agedcaredata.gov.au/](https://www.gen-agedcaredata.gov.au/) (Look for Star Ratings or quarterly reports)
-  - _Example Path (May Change):_ You might navigate through GEN -> Specific Quarter Report -> `health.gov.au` Publication Page -> Final `.xlsx` Link.
-
-**Using the Dashboard:**
-
-1.  **Obtain the File:** Download the specific quarterly `.xlsx` data extract you wish to analyse.
-2.  **Upload:** Use the sidebar (**1. Data Input**) to upload the downloaded Excel file.
-3.  _(Alternative)_ If running via Docker with a volume mount, the application may load a default file named `star-ratings-quarterly-data-extract-february-2025.xlsx` if no file is uploaded.
-4.  **Analyze:** Use the sidebar filters and navigate the tabs above to explore the data.
-
-> When you first open the dashboard, the **Introduction** tab welcomes you and outlines how to upload your Star Ratings extract, apply filters (State/Territory, Service Size, MMM Code, Provider), and navigate the analytical tabs (Sector Overview, Provider Drill-Down, Risk Radar, Anomaly Detection, Compare Providers).
-
-> **Important:** Please ensure you are using the official and complete `star-ratings-quarterly-data-extract-february-2025.xlsx` (or similar) Excel file. The accuracy of the analysis depends entirely on the structure and content of the uploaded data matching the expected format.
-
-This dashboard will eventually be populated by real-time Star Rating data, either shared directly in a Data Clean Room (DCR) by participating providers or accessed via API directly from the Department's GEM website.
+A regulatory intelligence tool for analysing performance across Australia's
+residential aged care providers, built with Streamlit and Plotly.
 
 ## Overview
 
-The Aged Care Sector Intelligence Dashboard is a data-driven regulatory intelligence tool designed to assist analysis of sector performance across Australia's aged care providers. Built using Streamlit and Plotly, this dashboard enables users to explore sector-wide trends and drill down into specific provider profiles using data from sources like the Aged Care Quality Data quarterly extracts.
-
-It focuses on combining key regulatory metrics including:
+The dashboard explores sector-wide trends and drills into individual provider
+profiles using the Australian Government's Star Ratings quarterly data extract.
+It combines:
 
 - Star Ratings (Overall, Compliance, Staffing, Quality Measures, Residents' Experience)
-- Compliance History (recorded compliance actions)
+- Compliance history and recorded regulatory decisions
 - Residents' Experience survey breakdown
-- Staffing compliance relative to benchmark minutes
-- Quality Measures (pressure injuries, falls, restrictive practices, medication management, etc.)
+- Staffing compliance relative to benchmark care minutes
+- Quality Measures (pressure injuries, falls, restrictive practices, medication management, and more)
 
 ![Quality Measures Distribution (Box Plot)](boxplots.png)
 
-This dashboard enables providers with multiple sites to view how each site is performing using this box plot.
+Providers running multiple sites can use the box plot above to see how each site
+performs relative to the others.
 
-## Features
+## Data source
 
-### Sector Overview (Planned Finalisation)
+This dashboard analyses the official **Star Ratings quarterly data extract**
+published by the Australian Government.
 
-- High-level visualisation of sector performance by State, Territory, and Remoteness.
-- Average star ratings and quality indicators across the nation and by regions.
+- **Content:** service-level Star Ratings (overall and component) for
+  government-funded residential aged care homes at a point in time. The workbook
+  must contain a `Star Ratings` sheet and a `Detailed data` sheet.
+- **Origin:** published via the GEN Aged Care Data website and the Department of
+  Health and Aged Care resources section.
+- **How to obtain:** download the quarterly `.xlsx` manually — the location
+  changes with each release. Start at
+  [GEN Aged Care Data](https://www.gen-agedcaredata.gov.au/) and look for Star
+  Ratings or the quarterly reports.
 
-### Provider Drill-Down (Implemented)
+The February 2025 extract ships with this repository and loads automatically.
+To analyse a different quarter, upload it under **1. Data Input** in the sidebar.
 
-- Select a specific provider from a dynamic filter.
-- Summarised provider profile:
-  - Number of service suburbs operated
-  - Number of small, medium, and large services
-- Key compliance and quality metrics displayed:
-  - Overall Star Rating (average)
-  - Registered Nurse Care Compliance (% of required minutes)
-  - Total Care Minutes Compliance (%)
-- Average quality measures across services (bar chart with error bars showing standard error of the mean).
-- Distribution of quality indicators across services (box plot with individual service points; outliers highlighted in red).
-- **Compliance History Table:**
-  - Displays services with recorded compliance actions.
-- **Serious Concerns Alert:**
-  - Highlights any services with concerning indicators (e.g., Star Rating ≤ 2, poor compliance ratings).
-  - Services displayed with red background for easy visibility.
-- All numeric values formatted to one decimal place for professionalism.
-- Consistent, clean visual design optimised for stakeholder presentations.
+> **Important:** accuracy depends entirely on the uploaded workbook matching the
+> expected structure. The app validates the required sheets and columns on load
+> and reports clearly if something is missing.
 
-## Technical Stack
+## Tabs
 
-- **Frontend Framework:** [Streamlit](https://streamlit.io/)
-- **Plotting Library:** [Plotly Express](https://plotly.com/python/plotly-express/)
-- **Data Management:** [Pandas](https://pandas.pydata.org/)
-- **Containerisation:** [Docker](https://www.docker.com/) (optional for deployment)
+| Tab | What it does |
+| --- | --- |
+| **Introduction** | Data provenance and usage instructions. |
+| **Sector Overview** | Headline compliance metrics and distribution plots for the filtered sector. |
+| **Provider Profile Drill-Down** | Provider profile, key metrics, Residents' Experience breakdown, quality-measure averages with standard error, per-site box plots, compliance history, and services breaching absolute concern thresholds. |
+| **Quality Measures Risk Radar** | Provider percentile ranks per quality measure against filtered sector peers, with a narrative summary of relative strengths and concerns. |
+| **Anomaly Detection** | IQR-based outlier screening across seven metrics, with counts by metric and provider. |
+| **Compare Providers** | Provider averages against sector median / 75th / 90th percentile benchmarks, excluding the provider itself from its own peer group. |
+| **Compliance Actions Tracker** | Recorded regulatory decisions: counts, breakdown by type and state, a monthly timeline, and a searchable, downloadable decision register. |
 
-## Setup Instructions
+Sidebar filters (State/Territory, Service Size, MMM Code, Provider) apply across
+every tab. The sector filters define the peer group used for all benchmarking.
 
-### Prerequisites
+## Running locally
 
-- Python 3.8+
-- Git
+**Prerequisites:** Python 3.11+ and Git.
 
-### Installation
+```bash
+git clone https://github.com/stu2454/agedcare-intelligence-dashboard.git
+cd agedcare-intelligence-dashboard
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/[Your GitHub Username]/[New Repository Name].git
-   cd [New Repository Name]
-   ```
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+streamlit run app.py
+```
+
+The app is served at <http://localhost:8501>.
+
+### With Docker
+
+```bash
+docker compose up --build
+```
+
+The app is served at <http://localhost:8510>.
+
+## Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+The suite covers the data pipeline against a synthetic extract built to exercise
+the awkward cases (zero and missing care-minutes targets, percent-formatted
+text, missing ratings), plus end-to-end runs of the real app through Streamlit's
+`AppTest` harness. Because `AppTest` executes every tab body on each run, an
+unhandled exception anywhere in the dashboard fails the suite.
+
+## Deploying to Render
+
+The repository includes a [`render.yaml`](render.yaml) blueprint.
+
+1. In the Render dashboard choose **New → Blueprint** and select this repository.
+2. Render reads `render.yaml` and creates a Docker web service.
+3. Deploy. Subsequent pushes to `main` deploy automatically (`autoDeploy: true`).
+
+Notes:
+
+- The container binds the `$PORT` Render injects; nothing is hardcoded.
+- Health checks hit Streamlit's `/_stcore/health` endpoint.
+- The blueprint targets the `singapore` region as the closest to Australia.
+  Change it before creating the service — the region is fixed afterwards.
+- On Render's free plan the service sleeps when idle, so the first request after
+  a period of inactivity takes a while to load the extract.
+
+## Project structure
+
+```text
+app.py                      Streamlit entrypoint: data source, filters, tab wiring
+agedcare/
+  config.py                 Column names, thresholds and display constants
+  data.py                   Loading, cleaning, benchmarks, outliers, concern flags
+  filters.py                Sidebar filters and the DashboardContext passed to tabs
+  tabs/                     One module per tab, each exposing render()
+tests/
+  conftest.py               Synthetic extract fixtures
+  test_data.py              Data pipeline and analytical helpers
+  test_app.py               End-to-end AppTest runs
+render.yaml                 Render blueprint
+Dockerfile                  Production image (binds $PORT, runs non-root)
+```
+
+The analytical layer in `agedcare/data.py` is plain pandas with no Streamlit
+dependencies beyond caching, so it can be tested and reused directly.
+
+## Roadmap
+
+Real-time Star Ratings data, via direct API access to the Department's GEN Aged
+Care Data website, or through data shared by participating providers into a
+secure Data Clean Room (DCR), potentially facilitated by ARIIA (Aged Care
+Research & Industry Innovation Australia).
+
+## Disclaimer
+
+Demonstrator model for intelligence and policy analysis purposes. Verify all
+data with official sources before making decisions.
+
+## License
+
+MIT

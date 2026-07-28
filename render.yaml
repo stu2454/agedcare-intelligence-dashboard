@@ -1,0 +1,24 @@
+# Render Blueprint. In the Render dashboard: New > Blueprint, point it at this
+# repo, and it will create the service below.
+#
+# Region note: `singapore` is the closest Render region to Australia. Change it
+# if you would rather deploy elsewhere — the region cannot be changed after the
+# service is created.
+services:
+  - type: web
+    name: agedcare-intelligence-dashboard
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    # Streamlit's built-in health endpoint. Without this Render health-checks
+    # `/`, which Streamlit serves as a websocket-driven shell.
+    healthCheckPath: /_stcore/health
+    autoDeploy: true
+    envVars:
+      # Render injects PORT automatically; Streamlit binds to it via the
+      # Dockerfile CMD. Everything below is belt-and-braces for headless running.
+      - key: STREAMLIT_SERVER_HEADLESS
+        value: "true"
+      - key: STREAMLIT_BROWSER_GATHER_USAGE_STATS
+        value: "false"

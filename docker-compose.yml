@@ -1,16 +1,14 @@
-version: '3.8' # Specify docker-compose version
-
+# Local development. Builds the same Dockerfile Render uses, with PORT set
+# explicitly the way Render injects it.
 services:
-  dashboard: # Name of your service
-    build: . # Build the image from the Dockerfile in the current directory
-    container_name: agedcare_dashboard_app # Optional: specify a container name
+  dashboard:
+    build: .
+    container_name: agedcare_dashboard_app
     ports:
-      # Map host port 8510 to container port 8501
       - "8510:8510"
+    environment:
+      PORT: "8510"
     volumes:
-      # Mount the local Excel data file into the container's /app directory
-      # IMPORTANT: Ensure this path correctly points to YOUR data file
+      # Swap in a different quarterly extract without rebuilding the image.
       - ./star-ratings-quarterly-data-extract-february-2025.xlsx:/app/star-ratings-quarterly-data-extract-february-2025.xlsx:ro
-      # Optional: Mount the code for development
-      # - ./app.py:/app/app.py
-    restart: unless-stopped # Optional: Restart policy
+    restart: unless-stopped

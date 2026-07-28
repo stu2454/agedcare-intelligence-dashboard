@@ -1,7 +1,8 @@
-streamlit
-pandas
-plotly
-openpyxl
-numpy
-scipy
-
+# Pinned so builds are reproducible. Previously unpinned, which meant every
+# deploy silently picked up whatever was latest on PyPI.
+streamlit==1.60.0
+pandas==3.0.5
+plotly==6.9.0
+openpyxl==3.1.5
+numpy==2.5.1
+scipy==1.18.0
